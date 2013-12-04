@@ -49,11 +49,20 @@ class CloudFlare {
             $this->is_cf = true;
         }
 
+        add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
+
         add_action( 'init', array( $this, 'init' ), 1 );
         add_action( 'admin_menu', array( $this, 'add_config_page' ) );
 
         add_action( 'wp_set_comment_status', array( $this, 'set_comment_status' ), 1, 2 );
     }
+
+    public function load_textdomain() {
+        if( is_admin() ) {
+            load_plugin_textdomain( 'cloudflare', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+        }
+    }
+
 
     public function init() {
         if ( strpos( $_SERVER["REMOTE_ADDR"], ':' ) === false ) {

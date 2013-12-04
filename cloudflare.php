@@ -299,8 +299,8 @@ class CloudFlare {
 
 			<?php if ( $curl_installed ) { ?>
 			<div style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;">
-				<input type="radio" name="dev_mode" value="0" <? if ($dev_mode == "off") echo "checked"; ?>> <?php _e( 'Off', 'cloudflare' ); ?>
-				<input type="radio" name="dev_mode" value="1" <? if ($dev_mode == "on") echo "checked"; ?>> <?php _e( 'On', 'cloudflare' ); ?>
+				<input type="radio" name="dev_mode" value="0" <?php checked( $dev_mode, 'off' ); ?>> <?php _e( 'Off', 'cloudflare' ); ?>
+				<input type="radio" name="dev_mode" value="1" <?php checked( $dev_mode, 'on' ); ?>> <?php _e( 'On', 'cloudflare' ); ?>
 			</div>
 			<?php
 			} else {

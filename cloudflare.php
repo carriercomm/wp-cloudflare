@@ -142,22 +142,16 @@ class CloudFlare {
 		$urlparts   = parse_url( home_url() );
 		$raw_domain = $urlparts["host"];
 
-		$curl_installed = function_exists('curl_init');
 
-		if ( $curl_installed ) {
-			// Load the API settings
-			$this->load_keys();
+		// Load the API settings
+		$this->load_keys();
 
-			// Attempt to get the matching host from CF
-			$this->domain = $this->get_domain( $this->api_key, $this->api_email, $raw_domain );
+		// Attempt to get the matching host from CF
+		$this->domain = $this->get_domain( $this->api_key, $this->api_email, $raw_domain );
 
-			// If not found, default to pulling the domain via client side.
-			if ( ! $this->domain ) {
-				$this->domain = $raw_domain;
-			}
-		}
-		else {
-			$this->domain = $raw_domain;    
+		// If not found, default to pulling the domain via client side.
+		if ( ! $this->domain ) {
+			$this->domain = $raw_domain;
 		}
 
 		$db_results = array();
@@ -197,21 +191,19 @@ class CloudFlare {
 				'new_email_valid' => array( 'color' => '2d2', 'text' => __( 'Your email has been verified. Happy blogging!', 'cloudflare' ) )
 			);
 
-			if ( $curl_installed ) {
-				if ( $key != '' && $email != '' ) {
-					$this->set_dev_mode( esc_sql( $key ), esc_sql( $email ), $this->domain, $dev_mode );
+			if ( $key != '' && $email != '' ) {
+				$this->set_dev_mode( esc_sql( $key ), esc_sql( $email ), $this->domain, $dev_mode );
 
-					if ( $dev_mode ) {
-						$ms[] = 'dev_mode_on';
-					}
-					else {
-						$ms[] = 'dev_mode_off';
-					}
+				if ( $dev_mode ) {
+					$ms[] = 'dev_mode_on';
 				}
-
-				$messages['dev_mode_on']  = array( 'color' => '2d2', 'text' => __( 'Development mode is On. Happy blogging!', 'cloudflare' ) );
-				$messages['dev_mode_off'] = array( 'color' => 'aa0', 'text' => __( 'Development mode is Off. Happy blogging!', 'cloudflare' ) );
+				else {
+					$ms[] = 'dev_mode_off';
+				}
 			}
+
+			$messages['dev_mode_on']  = array( 'color' => '2d2', 'text' => __( 'Development mode is On. Happy blogging!', 'cloudflare' ) );
+			$messages['dev_mode_off'] = array( 'color' => 'aa0', 'text' => __( 'Development mode is Off. Happy blogging!', 'cloudflare' ) );
 		}
 		?>
 
@@ -258,9 +250,9 @@ class CloudFlare {
 				$this->load_keys();
 
 				$dev_mode = 'off';
-				if ( $curl_installed && $this->api_key && $this->api_email ) {
+				//if ( $this->api_key && $this->api_email ) {
 					$dev_mode = $this->get_dev_mode_status( $this->api_key, $this->api_email, $this->domain );
-				}
+				//}
 			?>
 
 			<hr />
@@ -297,18 +289,10 @@ class CloudFlare {
 				<span style="font-size:9pt;">(<a href="https://support.cloudflare.com/entries/22280726-what-does-cloudflare-development-mode-mean" target="_blank"><?php _e( 'What is this?', 'cloudflare' ); ?></a>)</span>
 			</h3>
 
-			<?php if ( $curl_installed ) { ?>
 			<div style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;">
 				<input type="radio" name="dev_mode" value="0" <?php checked( $dev_mode, 'off' ); ?>> <?php _e( 'Off', 'cloudflare' ); ?>
 				<input type="radio" name="dev_mode" value="1" <?php checked( $dev_mode, 'on' ); ?>> <?php _e( 'On', 'cloudflare' ); ?>
 			</div>
-			<?php
-			} else {
-				_e( 'You cannot toggle development mode because cURL is not installed for your domain.  Please contact a server administrator for assistance with installing cURL.', 'cloudflare' );
-			}
-			?>
-
-			</p>
 
 			<p class="submit"><input type="submit" name="submit" value="<?php _e( 'Update options &raquo;', 'cloudflare' ); ?>" /></p>
 
@@ -368,33 +352,26 @@ class CloudFlare {
 		}
 	}
 
-	private function get_dev_mode_status($token, $email, $zone) {
-		$url = 'https://www.cloudflare.com/api_json.html';
-		$fields = array(
-			'a'     => "zone_load",
-			'tkn'   => $token,
-			'email' => $email,
-			'z'     => $zone
+	private function get_dev_mode_status( $token, $email, $zone ) {
+		$url  = 'https://www.cloudflare.com/api_json.html';
+		$args = array(
+			'body' => array(
+				'a'     => 'zone_load',
+				'tkn'   => $token,
+				'email' => $email,
+				'z'     => $zone
+			)
 		);
+		$response = wp_remote_post( $url, $args );
+		$body     = wp_remote_retrieve_body( $response );
 
-		$fields_string = '';
-		foreach($fields as $key=>$value) { 
-			$fields_string .= $key.'='.$value.'&';
-		}
+		if( $body ) {
+			$result = json_decode( $body );
 
-		rtrim( $fields_string, '&' );
-		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL, $url );
-		curl_setopt( $ch, CURLOPT_POST, count( $fields ) );
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $fields_string );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, TRUE );
-		$result = curl_exec( $ch );
-		$result = json_decode( $result );
-		curl_close( $ch );
-
-		if ( isset( $result->response ) ) {
-			if ( $result->response->zone->obj->zone_status_class == 'status-dev-mode' ) {
-				return "on";
+			if ( isset( $result->response ) ) {
+				if ( $result->response->zone->obj->zone_status_class == 'status-dev-mode' ) {
+					return "on";
+				}
 			}
 		}
 
@@ -403,62 +380,46 @@ class CloudFlare {
 
 	private function set_dev_mode( $token, $email, $zone, $value ) {
 		$url = 'https://www.cloudflare.com/api_json.html';
-		$fields = array(
-			'a'=>"devmode",
-			'tkn'=>$token,
-			'email'=>$email,
-			'z'=>$zone,
-			'v'=>$value
+		$args = array(
+			'body' => array(
+				'a'     => 'devmode',
+				'tkn'   => $token,
+				'email' => $email,
+				'z'     => $zone,
+				'v'     => $value
+			)
 		);
 
-		$fields_string = '';
-		foreach($fields as $key=>$value) { 
-			$fields_string .= $key.'='.$value.'&';
-		}
-
-		rtrim( $fields_string,'&' );
-		$ch = curl_init();
-		curl_setopt($ch,CURLOPT_URL,$url);
-		curl_setopt($ch,CURLOPT_POST,count($fields));
-		curl_setopt($ch,CURLOPT_POSTFIELDS,$fields_string);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-		$result = curl_exec($ch);
-		$result = json_decode($result);
-		curl_close($ch);
+		$response = wp_remote_post( $url, $args );
+		$body     = wp_remote_retrieve_body( $response );
 	}
 
 	private function get_domain( $token, $email, $raw_domain ) {
 		$url = 'https://www.cloudflare.com/api_json.html';
-			$fields = array(
-			'a'     => "zone_load_multi",
-			'tkn'   => $token,
-			'email' => $email
+		$args = array(
+			'body' => array(
+				'a'     => 'zone_load_multi',
+				'tkn'   => $token,
+				'email' => $email
+			)
 		);
 
-		$fields_string = '';
-		foreach($fields as $key=>$value) { 
-			$fields_string .= $key.'='.$value.'&';
-		}
+		$response = wp_remote_post( $url, $args );
+		$body     = wp_remote_retrieve_body( $response );
 
-		rtrim($fields_string, '&');
+		if( $body ) {
+			$result = json_decode( $body );
 
-		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL, $url );
-		curl_setopt( $ch, CURLOPT_POST,count( $fields ) );
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $fields_string );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, TRUE );
-		$result = curl_exec( $ch );
-		$result = json_decode( $result );
-		curl_close( $ch );
+			if ( isset( $result->response ) ) {
+				$zone_count = $result->response->zones->count;
 
-		if ( isset( $result->response ) ) {
-			$zone_count = $result->response->zones->count;
-			if ( $zone_count > 0 ) {
-				for ( $i = 0; $i < $zone_count; $i++ ) {
-					$zone_name = $result->response->zones->objs[$i]->zone_name;
+				if ( $zone_count > 0 ) {
+					for ( $i = 0; $i < $zone_count; $i++ ) {
+						$zone_name = $result->response->zones->objs[ $i ]->zone_name;
 
-					if ( strpos( $raw_domain, $zone_name ) !== fasle ) {
-						return $zone_name;
+						if ( strpos( $raw_domain, $zone_name ) !== fasle ) {
+							return $zone_name;
+						}
 					}
 				}
 			}

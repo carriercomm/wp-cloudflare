@@ -142,7 +142,6 @@ class CloudFlare {
 		$urlparts   = parse_url( home_url() );
 		$raw_domain = $urlparts["host"];
 
-
 		// Load the API settings
 		$this->load_keys();
 
@@ -153,10 +152,11 @@ class CloudFlare {
 		if ( ! $this->domain ) {
 			$this->domain = $raw_domain;
 		}
+		
+		$updated = false;
 
-		$db_results = array();
-				   
 		if ( isset( $_POST['submit'] ) && check_admin_referer( 'cloudflare-db-api','cloudflare-db-api-nonce' ) ) {
+			$updated  = true;
 			$key      = $_POST['key'];
 			$email    = $_POST['email'];
 			$dev_mode = esc_sql( $_POST["dev_mode"] );
@@ -179,26 +179,32 @@ class CloudFlare {
 			}
 			else {
 				$ms[] = 'new_email_valid';
-				update_option( 'cloudflare_api_email', esc_sql( $email) );
+				update_option( 'cloudflare_api_email', esc_sql( $email ) );
 				update_option( 'cloudflare_api_email_set_once', "TRUE" );
 			}
 
 
 			$messages = array(
 				'new_key_empty'   => array( 'color' => 'aa0', 'text' => __( 'Your key has been cleared.', 'cloudflare' ) ),
-				'new_key_valid'   => array( 'color' => '2d2', 'text' => __('Your key has been verified. Happy blogging!', 'cloudflare' ) ),
+				'new_key_valid'   => array( 'color' => '2d2', 'text' => __( 'Your key has been verified. Happy blogging!', 'cloudflare' ) ),
 				'new_email_empty' => array( 'color' => 'aa0', 'text' => __( 'Your email has been cleared.', 'cloudflare' ) ),
 				'new_email_valid' => array( 'color' => '2d2', 'text' => __( 'Your email has been verified. Happy blogging!', 'cloudflare' ) )
 			);
 
 			if ( $key != '' && $email != '' ) {
-				$this->set_dev_mode( esc_sql( $key ), esc_sql( $email ), $this->domain, $dev_mode );
+				$result = $this->set_dev_mode( esc_sql( $key ), esc_sql( $email ), $this->domain, $dev_mode );
 
-				if ( $dev_mode ) {
-					$ms[] = 'dev_mode_on';
+				if( $result ) {
+					if ( $dev_mode ) {
+						$ms[] = 'dev_mode_on';
+					}
+					else {
+						$ms[] = 'dev_mode_off';
+					}
 				}
 				else {
-					$ms[] = 'dev_mode_off';
+					$updated = '<div id="message" class="error"><p><strong>' . __( 'The API key or Email is invalid.', 'cloudflare' ) . '</strong></p></div>';
+					$ms = array();
 				}
 			}
 
@@ -207,17 +213,24 @@ class CloudFlare {
 		}
 		?>
 
-		<?php if ( ! empty( $_POST['submit'] ) ) { ?>
-			<div id="message" class="updated fade"><p><strong><?php _e( 'Options saved.', 'cloudflare' ) ?></strong></p></div>
-		<?php } ?>
-
 		<div class="wrap">
+
+			<h2><?php _e( 'Cloudflare', 'cloudflare' ); ?></h2>
+
+			<?php
+			if ( $updated ) {
+				echo '<div id="message" class="updated"><p><strong>' . __( 'Options saved.', 'cloudflare' ) . '</strong></p></div>';
+				
+				if ( $updated !== true ) {
+					echo $updated;
+				}
+			}
+			?>
+
 
 			<?php if ( $this->is_cf ) { ?>
 				<h3><?php _e( 'You are currently using CloudFlare!', 'cloudflare' ); ?></h3>
 			<?php } ?>
-
-			<h4><?php _e( 'CLOUDFLARE WORDPRESS PLUGIN:', 'cloudflare' ); ?></h4>
 
 			<?php _e( 'CloudFlare has developed a plugin for WordPress. By using the CloudFlare WordPress Plugin, you receive:', 'cloudflare' ); ?> 
 			<ol>
@@ -392,6 +405,16 @@ class CloudFlare {
 
 		$response = wp_remote_post( $url, $args );
 		$body     = wp_remote_retrieve_body( $response );
+
+		if( $body ) {
+			$result = json_decode( $body );
+
+			if ( isset( $result->response ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function get_domain( $token, $email, $raw_domain ) {

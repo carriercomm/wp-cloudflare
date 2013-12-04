@@ -120,16 +120,6 @@ class CloudFlare {
 		}
 	}
 
-	private function load_keys() {
-		if ( ! $this->api_key ) {
-			$this->api_key = get_option('cloudflare_api_key');
-		}
-
-		if ( ! $this->api_email ) {
-			$this->api_email = get_option('cloudflare_api_email');
-		}
-	}
-
 	public function add_config_page() {
 		add_submenu_page(
 			'plugins.php',
@@ -328,7 +318,7 @@ class CloudFlare {
 	}
 
 	// Now actually allow CF to see when a comment is approved/not-approved.
-	function set_comment_status( $id, $status ) {
+	public function set_comment_status( $id, $status ) {
 		$this->load_keys();
 
 		if ( ! $this->api_key || ! $this->api_email ) {
@@ -366,7 +356,18 @@ class CloudFlare {
 		}
 	}
 
-	function get_dev_mode_status($token, $email, $zone) {
+
+	private function load_keys() {
+		if ( ! $this->api_key ) {
+			$this->api_key = get_option('cloudflare_api_key');
+		}
+
+		if ( ! $this->api_email ) {
+			$this->api_email = get_option('cloudflare_api_email');
+		}
+	}
+
+	private function get_dev_mode_status($token, $email, $zone) {
 		$url = 'https://www.cloudflare.com/api_json.html';
 		$fields = array(
 			'a'     => "zone_load",
@@ -399,7 +400,7 @@ class CloudFlare {
 		return "off";
 	}
 
-	function set_dev_mode( $token, $email, $zone, $value ) {
+	private function set_dev_mode( $token, $email, $zone, $value ) {
 		$url = 'https://www.cloudflare.com/api_json.html';
 		$fields = array(
 			'a'=>"devmode",
@@ -425,7 +426,7 @@ class CloudFlare {
 		curl_close($ch);
 	}
 
-	function get_domain( $token, $email, $raw_domain ) {
+	private function get_domain( $token, $email, $raw_domain ) {
 		$url = 'https://www.cloudflare.com/api_json.html';
 			$fields = array(
 			'a'     => "zone_load_multi",

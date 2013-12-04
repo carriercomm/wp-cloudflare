@@ -250,9 +250,9 @@ class CloudFlare {
 				$this->load_keys();
 
 				$dev_mode = 'off';
-				//if ( $this->api_key && $this->api_email ) {
+				if ( $this->api_key && $this->api_email ) {
 					$dev_mode = $this->get_dev_mode_status( $this->api_key, $this->api_email, $this->domain );
-				//}
+				}
 			?>
 
 			<hr />

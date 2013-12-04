@@ -257,7 +257,8 @@ class CloudFlare {
 				// Load the API settings
 				$this->load_keys();
 
-				if ( $curl_installed ) {
+				$dev_mode = 'off';
+				if ( $curl_installed && $this->api_key && $this->api_email ) {
 					$dev_mode = $this->get_dev_mode_status( $this->api_key, $this->api_email, $this->domain );
 				}
 			?>

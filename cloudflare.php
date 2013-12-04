@@ -235,7 +235,7 @@ CloudFlare is a service that makes websites load faster and protects sites from 
     <?php } else { ?> 
         <p><?php printf(__('Input your API key from your CloudFlare Accounts Settings page here. To find your API key, log in to <a href="%1$s">CloudFlare</a> and go to \'Account\'.'), 'https://www.cloudflare.com/my-account.html'); ?></p>
     <?php } ?>
-    <?php if ($ms) { foreach ( $ms as $m ) { ?>
+    <?php if (isset($ms)) { foreach ( $ms as $m ) { ?>
     <p style="padding: .5em; color: #<?php echo $messages[$m]['color']; ?>; font-weight: bold;"><?php echo $messages[$m]['text']; ?></p>
     <?php } } ?>
     <h3><label for="key"><?php _e('CloudFlare API Key'); ?></label></h3>
@@ -316,9 +316,11 @@ function get_dev_mode_status($token, $email, $zone) {
                 'z'=>$zone
               );
 
+    $fields_string = '';
     foreach($fields as $key=>$value) { 
         $fields_string .= $key.'='.$value.'&';
     }
+
     rtrim($fields_string,'&');
     $ch = curl_init();
     curl_setopt($ch,CURLOPT_URL,$url);
@@ -329,8 +331,10 @@ function get_dev_mode_status($token, $email, $zone) {
     $result = json_decode($result);
     curl_close($ch);
 
-    if ($result->response->zone->obj->zone_status_class == "status-dev-mode") {
-        return "on";
+    if ( isset( $result->response ) ) {
+        if ($result->response->zone->obj->zone_status_class == "status-dev-mode") {
+            return "on";
+        }
     }
 
     return "off";
@@ -346,9 +350,12 @@ function set_dev_mode($token, $email, $zone, $value)
             'z'=>$zone,
             'v'=>$value
           );
+
+	$fields_string = '';
     foreach($fields as $key=>$value) { 
         $fields_string .= $key.'='.$value.'&';
     }
+
     rtrim($fields_string,'&');
     $ch = curl_init();
     curl_setopt($ch,CURLOPT_URL,$url);
@@ -368,10 +375,13 @@ function get_domain($token, $email, $raw_domain) {
                 'email'=>$email
               );
 
+    $fields_string = '';
     foreach($fields as $key=>$value) { 
         $fields_string .= $key.'='.$value.'&';
     }
+
     rtrim($fields_string,'&');
+
     $ch = curl_init();
     curl_setopt($ch,CURLOPT_URL,$url);
     curl_setopt($ch,CURLOPT_POST,count($fields));
@@ -381,16 +391,17 @@ function get_domain($token, $email, $raw_domain) {
     $result = json_decode($result);
     curl_close($ch);
 
-    $zone_count = $result->response->zones->count;
-    if ($zone_count > 0) {
-        for ($i = 0; $i < $zone_count; $i++) {
-            $zone_name = $result->response->zones->objs[$i]->zone_name;
-            if (strpos($raw_domain, $zone_name) !== FALSE){
-                return $zone_name;
+    if ( isset( $result->response ) ) {
+        $zone_count = $result->response->zones->count;
+        if ($zone_count > 0) {
+            for ($i = 0; $i < $zone_count; $i++) {
+                $zone_name = $result->response->zones->objs[$i]->zone_name;
+                if (strpos($raw_domain, $zone_name) !== FALSE){
+                    return $zone_name;
+                }
             }
         }
     }
     
     return null;
 }
-?>

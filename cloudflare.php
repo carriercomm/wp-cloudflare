@@ -1,12 +1,15 @@
 <?php
-/*
-Plugin Name: CloudFlare
-Plugin URI: http://www.cloudflare.com/wiki/CloudFlareWordPressPlugin
-Description: CloudFlare integrates your blog with the CloudFlare platform.
-Version: 1.4.0
-Author: Ian Pye, Jerome Chen, James Greene (CloudFlare Team)
-License: GPLv2
-*/
+/**
+ * Plugin Name: CloudFlare
+ * Plugin URI:  http://www.cloudflare.com/wiki/CloudFlareWordPressPlugin
+ * Description: CloudFlare integrates your blog with the CloudFlare platform.
+ * Version:     1.4.0
+ * Author:      Ian Pye, Jerome Chen, James Greene (CloudFlare Team)
+ * Author URI:  http://www.cloudflare.com
+ * License:     GPLv2
+ * Text Domain: cloudflare
+ * Domain Path: /languages
+ */
 
 /*
 This program is free software; you can redistribute it and/or modify
@@ -53,7 +56,7 @@ class CloudFlare {
     }
 
     public function init() {
-        if ( strpos( $_SERVER["REMOTE_ADDR"], ":") === false ) {
+        if ( strpos( $_SERVER["REMOTE_ADDR"], ':' ) === false ) {
             $cf_ip_ranges = array(
                 '204.93.240.0/24',
                 '204.93.177.0/24',
@@ -121,8 +124,8 @@ class CloudFlare {
     public function add_config_page() {
         add_submenu_page(
             'plugins.php',
-            __( 'CloudFlare Configuration' ),
-            __('CloudFlare'),
+            __( 'CloudFlare Configuration', 'cloudflare' ),
+            __( 'CloudFlare', 'cloudflare' ),
             'manage_options',
             'cloudflare',
             array( $this, 'show_config_page' )
@@ -160,7 +163,7 @@ class CloudFlare {
 
         $db_results = array();
                    
-        if ( isset( $_POST['submit'] ) && check_admin_referer('cloudflare-db-api','cloudflare-db-api-nonce') ) {
+        if ( isset( $_POST['submit'] ) && check_admin_referer( 'cloudflare-db-api','cloudflare-db-api-nonce' ) ) {
             $key      = $_POST['key'];
             $email    = $_POST['email'];
             $dev_mode = esc_sql( $_POST["dev_mode"] );
@@ -189,10 +192,10 @@ class CloudFlare {
 
 
             $messages = array(
-                'new_key_empty'   => array( 'color' => 'aa0', 'text' => __( 'Your key has been cleared.' ) ),
-                'new_key_valid'   => array( 'color' => '2d2', 'text' => __('Your key has been verified. Happy blogging!' ) ),
-                'new_email_empty' => array( 'color' => 'aa0', 'text' => __( 'Your email has been cleared.' ) ),
-                'new_email_valid' => array( 'color' => '2d2', 'text' => __( 'Your email has been verified. Happy blogging!' ) )
+                'new_key_empty'   => array( 'color' => 'aa0', 'text' => __( 'Your key has been cleared.', 'cloudflare' ) ),
+                'new_key_valid'   => array( 'color' => '2d2', 'text' => __('Your key has been verified. Happy blogging!', 'cloudflare' ) ),
+                'new_email_empty' => array( 'color' => 'aa0', 'text' => __( 'Your email has been cleared.', 'cloudflare' ) ),
+                'new_email_valid' => array( 'color' => '2d2', 'text' => __( 'Your email has been verified. Happy blogging!', 'cloudflare' ) )
             );
 
             if ( $curl_installed ) {
@@ -207,49 +210,49 @@ class CloudFlare {
                     }
                 }
 
-                $messages['dev_mode_on']  = array('color' => '2d2', 'text' => __( 'Development mode is On. Happy blogging!' ) );
-                $messages['dev_mode_off'] = array('color' => 'aa0', 'text' => __( 'Development mode is Off. Happy blogging!' ) );
+                $messages['dev_mode_on']  = array( 'color' => '2d2', 'text' => __( 'Development mode is On. Happy blogging!', 'cloudflare' ) );
+                $messages['dev_mode_off'] = array( 'color' => 'aa0', 'text' => __( 'Development mode is Off. Happy blogging!', 'cloudflare' ) );
             }
         }
         ?>
 
         <?php if ( ! empty( $_POST['submit'] ) ) { ?>
-            <div id="message" class="updated fade"><p><strong><?php _e('Options saved.') ?></strong></p></div>
+            <div id="message" class="updated fade"><p><strong><?php _e( 'Options saved.', 'cloudflare' ) ?></strong></p></div>
         <?php } ?>
 
         <div class="wrap">
 
             <?php if ( $this->is_cf ) { ?>
-                <h3>You are currently using CloudFlare!</h3>
+                <h3><?php _e( 'You are currently using CloudFlare!', 'cloudflare' ); ?></h3>
             <?php } ?>
 
-            <h4><?php _e( 'CLOUDFLARE WORDPRESS PLUGIN:' ); ?></h4>
+            <h4><?php _e( 'CLOUDFLARE WORDPRESS PLUGIN:', 'cloudflare' ); ?></h4>
 
-            CloudFlare has developed a plugin for WordPress. By using the CloudFlare WordPress Plugin, you receive: 
+            <?php _e( 'CloudFlare has developed a plugin for WordPress. By using the CloudFlare WordPress Plugin, you receive:', 'cloudflare' ); ?> 
             <ol>
-                <li>Correct IP Address information for comments posted to your site</li>
-                <li>Better protection as spammers from your WordPress blog get reported to CloudFlare</li>
+                <li><?php _e( 'Correct IP Address information for comments posted to your site', 'cloudflare' ); ?></li>
+                <li><?php _e( 'Better protection as spammers from your WordPress blog get reported to CloudFlare', 'cloudflare' ); ?></li>
             </ol>
 
-            <h4>VERSION COMPATIBILITY:</h4>
+            <h4><?php _e( 'VERSION COMPATIBILITY:', 'cloudflare' ); ?></h4>
 
-            The plugin is compatible with WordPress version 2.8.6 and later. The plugin will not install unless you have a compatible platform.
+            <?php _e( 'The plugin is compatible with WordPress version 2.8.6 and later. The plugin will not install unless you have a compatible platform.', 'cloudflare' ); ?>
 
-            <h4>THINGS YOU NEED TO KNOW:</h4>
+            <h4><?php _e( 'THINGS YOU NEED TO KNOW:', 'cloudflare' ); ?></h4>
 
             <ol>
-                <li>The main purpose of this plugin is to ensure you have no change to your originating IPs when using CloudFlare. Since CloudFlare acts a reverse proxy, connecting IPs now come from CloudFlare's range. This plugin will ensure you can continue to see the originating IP. Once you install the plugin, the IP benefit will be activated.</li>
+                <li><?php _e( "The main purpose of this plugin is to ensure you have no change to your originating IPs when using CloudFlare. Since CloudFlare acts a reverse proxy, connecting IPs now come from CloudFlare's range. This plugin will ensure you can continue to see the originating IP. Once you install the plugin, the IP benefit will be activated.", 'cloudflare' ); ?></li>
 
-                <li>Every time you click the 'spam' button on your blog, this threat information is sent to CloudFlare to ensure you are constantly getting the best site protection.</li>
+                <li><?php _e( "Every time you click the 'spam' button on your blog, this threat information is sent to CloudFlare to ensure you are constantly getting the best site protection.", 'cloudflare' ); ?></li>
 
-                <li>We recommend that any user on CloudFlare with WordPress use this plugin. </li>
+                <li><?php _e( 'We recommend that any user on CloudFlare with WordPress use this plugin.', 'cloudflare' ); ?></li>
 
-                <li>NOTE: This plugin is complementary to Akismet and W3 Total Cache. We recommend that you continue to use those services.</li> 
+                <li><?php _e( 'NOTE: This plugin is complementary to Akismet and W3 Total Cache. We recommend that you continue to use those services.', 'cloudflare' ); ?></li> 
             </ol>
 
-            <h4>MORE INFORMATION ON CLOUDFLARE:</h4>
+            <h4><?php _e( 'MORE INFORMATION ON CLOUDFLARE:', 'cloudflare' ); ?></h4>
 
-            CloudFlare is a service that makes websites load faster and protects sites from online spammers and hackers. Any website with a root domain (ie www.mydomain.com) can use CloudFlare. On average, it takes less than 5 minutes to sign up. You can learn more here: <a href="http://www.cloudflare.com/">CloudFlare.com</a>.
+            <?php printf( __( 'CloudFlare is a service that makes websites load faster and protects sites from online spammers and hackers. Any website with a root domain (ie www.mydomain.com) can use CloudFlare. On average, it takes less than 5 minutes to sign up. You can learn more here: <a href="%1$s">CloudFlare.com</a>.', 'cloudflare' ), 'http://www.cloudflare.com/' ); ?>
 
             <?php 
                 // Load the API settings
@@ -266,7 +269,7 @@ class CloudFlare {
             <?php wp_nonce_field( 'cloudflare-db-api','cloudflare-db-api-nonce' ); ?>
 
             <?php if ( ! $this->api_key || ! $this->api_email ) { ?>
-                <p><?php printf( __( 'Input your API key from your CloudFlare Accounts Settings page here. To find your API key, log in to <a href="%1$s">CloudFlare</a> and go to \'Account\'.' ), 'https://www.cloudflare.com/my-account.html'); ?></p>
+                <p><?php printf( __( 'Input your API key from your CloudFlare Accounts Settings page here. To find your API key, log in to <a href="%1$s">CloudFlare</a> and go to \'Account\'.', 'cloudflare' ), 'https://www.cloudflare.com/my-account.html' ); ?></p>
             <?php } ?>
 
             <?php if ( isset( $ms ) ) { foreach ( $ms as $m ) { ?>
@@ -274,38 +277,40 @@ class CloudFlare {
             <?php } } ?>
 
             <h3>
-                <label for="key"><?php _e('CloudFlare API Key'); ?></label>
+                <label for="key"><?php _e( 'CloudFlare API Key', 'cloudflare' ); ?></label>
             </h3>
             <p>
                 <input id="key" name="key" type="text" size="50" maxlength="48" value="<?php echo $this->api_key; ?>" style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;" />
-                (<?php _e('<a href="https://www.cloudflare.com/my-account.html">Get this?</a>'); ?>)
+                ('<a href="https://www.cloudflare.com/my-account.html"><?php _e( 'Get this?', 'cloudflare' ); ?></a>)
             </p>
 
             <h3>
-                <label for="email"><?php _e('CloudFlare API Email'); ?></label>
+                <label for="email"><?php _e( 'CloudFlare API Email', 'cloudflare' ); ?></label>
             </h3>
             <p>
                 <input id="email" name="email" type="text" size="50" maxlength="48" value="<?php echo $this->api_email; ?>" style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;" />
-                (<?php _e('<a href="https://www.cloudflare.com/my-account.html">Get this?</a>'); ?>)
+                ('<a href="https://www.cloudflare.com/my-account.html"><?php _e( 'Get this?', 'cloudflare' ); ?></a>)
             </p>
 
             <h3>
-                <label for="dev_mode"><?php _e('Development Mode'); ?></label>
-                <span style="font-size:9pt;">(<a href="https://support.cloudflare.com/entries/22280726-what-does-cloudflare-development-mode-mean" target="_blank">What is this?</a>)</span>
+                <label for="dev_mode"><?php _e( 'Development Mode', 'cloudflare' ); ?></label>
+                <span style="font-size:9pt;">(<a href="https://support.cloudflare.com/entries/22280726-what-does-cloudflare-development-mode-mean" target="_blank"><?php _e( 'What is this?', 'cloudflare' ); ?></a>)</span>
             </h3>
 
             <?php if ( $curl_installed ) { ?>
             <div style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;">
-                <input type="radio" name="dev_mode" value="0" <? if ($dev_mode == "off") echo "checked"; ?>> Off
-                <input type="radio" name="dev_mode" value="1" <? if ($dev_mode == "on") echo "checked"; ?>> On
+                <input type="radio" name="dev_mode" value="0" <? if ($dev_mode == "off") echo "checked"; ?>> <?php _e( 'Off', 'cloudflare' ); ?>
+                <input type="radio" name="dev_mode" value="1" <? if ($dev_mode == "on") echo "checked"; ?>> <?php _e( 'On', 'cloudflare' ); ?>
             </div>
-            <?php } else { ?>
-                You cannot toggle development mode because cURL is not installed for your domain.  Please contact a server administrator for assistance with installing cURL.
-            <?php } ?>
+            <?php
+            } else {
+                _e( 'You cannot toggle development mode because cURL is not installed for your domain.  Please contact a server administrator for assistance with installing cURL.', 'cloudflare' );
+            }
+            ?>
 
             </p>
 
-            <p class="submit"><input type="submit" name="submit" value="<?php _e('Update options &raquo;'); ?>" /></p>
+            <p class="submit"><input type="submit" name="submit" value="<?php _e( 'Update options &raquo;', 'cloudflare' ); ?>" /></p>
 
             </form>
 
@@ -385,8 +390,7 @@ class CloudFlare {
         return "off";
     }
 
-    function set_dev_mode( $token, $email, $zone, $value )
-    {
+    function set_dev_mode( $token, $email, $zone, $value ) {
         $url = 'https://www.cloudflare.com/api_json.html';
         $fields = array(
             'a'=>"devmode",

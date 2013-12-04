@@ -38,6 +38,12 @@ You will also want to sign up your blog with CloudFlare.com
 
 == Changelog ==
 
+= 1.4.0 =
+
+* The plugin is now OOP based
+* Removed redundant code
+* Fixed notices
+
 = 1.3.11 =
 
 * Adjusted a line syntax to account for differing PHP configurations.
